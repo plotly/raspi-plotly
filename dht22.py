@@ -66,7 +66,7 @@ elif TEMP_TYPE == 'f':
     TEMP_LEGEND = 'Temperature (F)'
 
 if BAR_SCATTER == 's':
-    chart_type = 'scatter'
+    chart_type = ''
 elif BAR_SCATTER == 'b':
     chart_type = 'bar'
 

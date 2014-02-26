@@ -6,6 +6,8 @@ import plotly
 import datetime
 import os
 import sys
+import json
+import requests
 
 LOGGER = True # if not true, wont log!
 FIRST_POST = True
@@ -51,6 +53,7 @@ print("========================================================\n"+b.END)
 FILENAME = raw_input(b.BLUE+"Enter your Graph Name: \n>>  "+b.END)
 USERNAME = raw_input(b.BLUE+"Enter your Plotly Username: \n>>  "+b.END)
 API_KEY = raw_input(b.BLUE+"Enter your Plotly Api Key: \n>>  "+b.END)
+STREAM_TOKEN = raw_input(b.BLUE+"Enter your Plotly Stream Token: \n>>  "+b.END)
 TEMP_TYPE = question(b.BLUE+"Do you want to plot Celius for Farenheit? (c/f)  \n>>  "+b.END, ['c','f'])
 BAR_SCATTER = question(b.BLUE+"Scatter or Bar Chart? (s/b)  \n>>  "+b.END, ['s','b'])
 DELAY = int(raw_input(b.BLUE+"How frequently do you want to post data? (in seconds, minimum is 30)  \n>>  "+b.END))
@@ -132,8 +135,18 @@ adcnum = 0
 #init plotly
 py = plotly.plotly(USERNAME, API_KEY)
 
-while True:
+response = py.plot([{'x': [], 'y': [], 'name': TEMP_LEGEND, 'type': chart_type}], filename=FILENAME, fileopt='extend', layout=LAYOUT)
 
+os.system('clear')
+print(b.GREEN+"========================================================")
+print("Successfully Posted to Plot.ly! Here is your Graph info:")
+print("========================================================\n")
+print(b.WARN+"Graph URL:       "+response[u'url'])
+print("Graph Title:     "+response[u'filename']+'\n'+b.END)
+print(b.GREEN+"========================================================\n"+b.END)
+
+def streamdata():
+    while True:
         # read the analog pin (temperature sensor LM36)
         read_adc0 = readadc(adcnum, SPICLK, SPIMOSI, SPIMISO, SPICS)
 
@@ -161,57 +174,31 @@ while True:
                 TEMP_READING = temp_F
 
             date_stamp = datetime.datetime.now()
-            data = [{
-            'x': date_stamp,
+            data = {
+            'x': date_stamp.strftime('%Y-%m-%d %H:%M:%S.%f'),
             'y': TEMP_READING,
-            'name' : TEMP_LEGEND,
-            'type' : chart_type
-            }]
+            }
+            yield json.dumps(data)+'\n'
+            time.sleep(0.05)
 
-
-            #print temp_C
-            #print data
-            #print date_stamp
-
-
-            response = py.plot(data, filename=FILENAME, fileopt='extend', layout=LAYOUT)
-            if response[u'error'] != '' or response[u'message'] != '' or response[u'warning'] != '':
-                quit()
-            else:
-                if FIRST_POST == True:
-                    os.system('clear')
-                    print(b.GREEN+"========================================================")
-                    print("Successfully Posted to Plot.ly! Here is your Graph info:")
-                    print("========================================================\n")
-                    print(b.WARN+"Graph URL:       "+response[u'url'])
-                    print("Graph Title:     "+response[u'filename']+'\n'+b.END)
-                    print(b.GREEN+"========================================================\n"+b.END)
-                    print(b.WARN+"Readings Posted to Plotly:\n"+b.END)
-                    time.sleep(1)
-                    if TEMP_TYPE == 'c':
-                        print(b.BLUE+"Temperature (C):    "+temp_C+b.END)
-                    if TEMP_TYPE == 'f':
-                        print(b.BLUE+"Temperature (F):    "+temp_F+b.END)
-
-                    FIRST_POST = False
-                else:
-                    if TEMP_TYPE == 'c':
-                        print(b.BLUE+"Temperature (C):    "+temp_C+b.END+spaces)
-                    if TEMP_TYPE == 'f':
-                        print(b.BLUE+"Temperature (F):    "+temp_F+b.END+spaces)
-
-        # Delay between POSTs to Plot.ly
-        toolbar_width = 54
-        sleep_time = DELAY / toolbar_width
-        # setup toolbar
-        sys.stdout.write("[%s]" % (" " * toolbar_width))
-        sys.stdout.flush()
-        sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
-
-        for i in xrange(toolbar_width):
-            time.sleep(sleep_time)
-            sys.stdout.write(b.WARN+"-"+b.END)
+            '''
+            # Delay between POSTs to Plot.ly
+            toolbar_width = 54
+            sleep_time = DELAY / toolbar_width
+            # setup toolbar
+            sys.stdout.write("[%s]" % (" " * toolbar_width))
             sys.stdout.flush()
-            if i == toolbar_width - 1:
-                sys.stdout.write("\b" * (toolbar_width+1))
+            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
 
+            for i in xrange(toolbar_width):
+                time.sleep(sleep_time)
+                sys.stdout.write(b.WARN+"-"+b.END)
+                sys.stdout.flush()
+                if i == toolbar_width - 1:
+                    sys.stdout.write("\b" * (toolbar_width+1))
+            '''
+
+       
+requests.post('http://stream.plot.ly',
+    data=gen(),
+    headers = {'plotly-streamtoken': stream_token, 'connection': 'keep-alive'})

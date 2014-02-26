@@ -174,7 +174,7 @@ while True:
             print date_stamp
 
 
-            response = py.plot(data, filename=FILENAME, layout=LAYOUT)
+            response = py.plot(data, filename=FILENAME, fileopt='extend', layout=LAYOUT)
             if response[u'error'] != '' or response[u'message'] != '' or response[u'warning'] != '':
                 quit()
             else:

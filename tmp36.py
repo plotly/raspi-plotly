@@ -13,6 +13,7 @@ spaces = (" "*50)
 
 #init GPIO
 GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
 def question(question, poss_ans):
     response = False
@@ -166,8 +167,12 @@ while True:
             'name' : TEMP_LEGEND,
             'type' : chart_type
             }]
+
+
             print temp_C
             print date_stamp
+
+
             response = py.plot(data, filename=FILENAME, fileopt='extend', layout=LAYOUT)
             if response[u'error'] != '' or response[u'message'] != '' or response[u'warning'] != '':
                 quit()

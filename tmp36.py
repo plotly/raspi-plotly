@@ -79,7 +79,7 @@ LAYOUT = {
     }
 }
 
-# Function to read data from Analog Pin 0 from MCP3008
+# Function to read data from Analog Pin 0 from MCP3008 (don't need to edit)
 def readadc(adcnum, clockpin, mosipin, misopin, cspin):
         if ((adcnum > 7) or (adcnum < 0)):
                 return -1
@@ -115,7 +115,7 @@ def readadc(adcnum, clockpin, mosipin, misopin, cspin):
         return adcout
 
 # change these as desired - they're the pins connected from the
-# SPI port on the ADC to the Cobbler
+# SPI port on the ADC to the GPIO Pins on the Raspi
 SPICLK = 18
 SPIMISO = 23
 SPIMOSI = 24
@@ -169,9 +169,9 @@ while True:
             }]
 
 
-            print temp_C
-            print data
-            print date_stamp
+            #print temp_C
+            #print data
+            #print date_stamp
 
 
             response = py.plot(data, filename=FILENAME, fileopt='extend', layout=LAYOUT)
